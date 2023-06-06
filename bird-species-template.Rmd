@@ -10,17 +10,21 @@ output: html_notebook
 
 ```{r}
 # Load `tidyverse` and `dcData` packages
-
+library(tidyverse)
+library(dcData)
 
 
 
 # Load the `OrdwayBirds` data set into your RStudio environment from the `dcData` package
-
+data("OrdwayBirds", package = "dcData")
 
 
 
 # Show a few commands used to inspect the data set a few different ways
 
+head(OrdwayBirds)
+tail(OrdwayBirds)
+summary(OrdwayBirds)
 
 
 ```
@@ -35,11 +39,15 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 ```{r}
 # Get the data table & clean up dates (see Data Computing eBook)
-
+OrdwayBirdsClean <-
+  OrdwayBirds %>%
+  select( SpeciesName, Month, Day ) %>%
+  mutate( Month = as.numeric(as.character(Month)), 
+          Day = as.numeric(as.character(Day)))
 
 
 # Inspect resulting data
-
+OrdwayBirdsClean
 
 ```
 
@@ -52,11 +60,11 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 ```{r}
 # unique species in original data (including mis-spellings)
-
+unique(OrdwayBirds$SpeciesName)
 
 
 # unique species in the clean list
-
+unique(OrdwayBirdsClean$SpeciesName)
 
 
 ```
