@@ -39,7 +39,7 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 ```{r}
 # Get the data table & clean up dates (see Data Computing eBook)
-OrdwayBirdsClean <-
+OrdwayBirds <-
   OrdwayBirds %>%
   select( SpeciesName, Month, Day ) %>%
   mutate( Month = as.numeric(as.character(Month)), 
@@ -47,7 +47,7 @@ OrdwayBirdsClean <-
 
 
 # Inspect resulting data
-OrdwayBirdsClean
+head(OrdwayBirds)
 
 ```
 
@@ -64,7 +64,7 @@ unique(OrdwayBirds$SpeciesName)
 
 
 # unique species in the clean list
-unique(OrdwayBirdsClean$SpeciesName)
+unique(OrdwaySpeciesNames$SpeciesNameCleaned)
 
 
 ```
@@ -77,15 +77,22 @@ unique(OrdwayBirdsClean$SpeciesName)
 
 ```{r}
 # inspect OrdwaySpeciesNames
-
+head(OrdwaySpeciesNames)
+tail(OrdwaySpeciesNames)
+summary(OrdwaySpeciesNames)
 
 # inner join
-
+Corrected <-
+  OrdwayBirds %>%
+  inner_join( OrdwaySpeciesNames ) %>% 
+  select( Species = SpeciesNameCleaned, Month, Day ) %>%
+  na.omit()  # cleaned up the missing ones
 
 
 
 # inspect the data after the join
-
+summary(Corrected)
+unique(Corrected$Species)
 
 ```
 
@@ -96,17 +103,20 @@ We want to identify the top 5-6 bird species sighted at the Katherine Ordway Nat
 
 ```{r}
 # count sightings by species in descending order
-
-
-
-
+MostPopular <- Corrected %>%
+  group_by(Species) %>%
+  tally() %>%
+  arrange(desc(n))
+MostPopular
 # a hint in the text book recommends displaying the top 10 species to choose our threshold
-
+head(MostPopular, 10)
 
 
 # define a sightings threshold; produce a table with only birds belonging to major species
-
-
+threshold <- 600
+MajorSpecies <- MostPopular %>%
+  filter(n > threshold)
+MajorSpecies
 
 
 ```
@@ -118,7 +128,11 @@ We now want to produce a month-by-month count for each of the major species, and
 
 ```{r}
 # prepare glyph-ready data table called `ByMonth`
-
+ByMonth <- Corrected %>%
+  group_by(Month, Species) %>%
+  dplyr::filter(Species %in% MajorSpecies$Species) %>%
+  dplyr::summarise(count=n())
+ByMonth
 
 
 ```
@@ -143,23 +157,32 @@ According to the graph, we can answer the questions posed:
 
 ##### 1. Which species are present year-round?  
 
+American Goldfinch and Black-capped Chickadee are present throughout the entire year, even if it can be in small numbers, but it is present.
 
 
 ##### 2. Which species are migratory, that is, primarily present in one or two seasons?
 
-
+State-colored Junco are present from month 1 to 5, and from month 9 to 12, meaning they migrate from month 5 to 9.
+Field sparrows are present from month 4 to 10
+Lincolns are present from month 5 to 10 
 
 
 ##### 3. What is the peak month for each major species? (bullet list)
 
-
-
+* month 10 for American Goldfinch
+* month 11 for Black-capped chickadee
+* month 5 for Field sparrow
+* month 9 for Lincol's sparrow
+* month 5 for Robin
+* month 10 for State-colored Junco
+* month 3 for Tree swallow
 
 ##### 4. Which major species are seen in good numbers for at least 6 months of the year?
 
 
-
 ```{r}
-
+ByMonth %>%
+  filter(n_distinct(Species) >= 6)
+  
 ```
 
